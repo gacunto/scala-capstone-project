@@ -19,24 +19,26 @@ case class Location(lat: Double, lon: Double) {
     val dLat = (loc.lat - lat).toRadians
     val dLon = (loc.lon - lon).toRadians
 
-    val a = sin(dLat / 2) * sin(dLat / 2) + cos(lat.toRadians) * cos(loc.lat.toRadians) * sin(dLon / 2) * sin(dLon / 2)
-    val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    val a = sin(dLat / 2.0) * sin(dLat / 2.0) + cos(lat.toRadians) * cos(loc.lat.toRadians) * sin(dLon / 2.0) * sin(dLon / 2.0)
+    val c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a))
 
     R * c
   }
 
   def idw(loc: Location): Double = {
-    1 / pow(distanceTo(loc), Location.P)
+    1.0 / pow(distanceTo(loc), Location.P)
   }
 
   def isAt(x: Int, y: Int): Boolean = {
     lat.toInt == x && lon.toInt == y
   }
+
+  def toGridLocation: GridLocation = GridLocation(lat.toInt, lon.toInt)
 }
 
 object Location {
 
-  val P = 2
+  val P: Double = 2.0
 
   def fromPixelIndex(index: Int): Location = {
     def x: Int = index % 360
@@ -49,10 +51,10 @@ object Location {
     def x0: Int = (index % 256) / 256 + x
     def y0: Int = (index / 256) / 256 + y
 
-    val p: Int = 1 << zoom
+    val p: Double = (1 << zoom).toDouble
 
-    def lat: Double = atan(sinh(Pi * (1.0 - 2.0 * y0 / p))) * 180.0 / Pi
-    def lon: Double = x0 * 360.0 / p - 180.0
+    def lat: Double = atan(sinh(Pi * (1.0 - 2.0 * y0.toDouble / p))) * 180.0 / Pi
+    def lon: Double = (x0.toDouble * 360.0) / p - 180.0
 
     Location(lat, lon)
   }
@@ -74,7 +76,9 @@ case class Tile(x: Int, y: Int, zoom: Int)
   * @param lat Circle of latitude in degrees, -89 ≤ lat ≤ 90
   * @param lon Line of longitude in degrees, -180 ≤ lon ≤ 179
   */
-case class GridLocation(lat: Int, lon: Int)
+case class GridLocation(lat: Int, lon: Int) {
+  def toLocation: Location = Location(lat, lon)
+}
 
 /**
   * Introduced in Week 5. Represents a point inside of a grid cell.
@@ -136,7 +140,7 @@ object ObservatoryImplicits {
   }
 
   implicit class F2C(f: Double) {
-    def toCelsius: Double = (f - 32) * 5 / 9
+    def toCelsius: Double = ((f - 32.0) * 5.0) / 9.0
   }
 
   implicit def kryoEncoder[A](implicit ct: ClassTag[A]): Encoder[A] =

@@ -41,19 +41,19 @@ object Interaction {
 
     val pixels = (0 until width * height)
       .par.map(pos => {
-                  val xPos = (pos % width).toDouble / width + tile.x
-                  val yPos = (pos / height).toDouble / height + tile.y
+      val xPos = (pos % width).toDouble / width + tile.x
+      val yPos = (pos / height).toDouble / height + tile.y
 
-                  val temperature = predictTemperature(
-                    temperatures,
-                    toLocation(xPos, yPos, tile.zoom)
-                  )
+      val temperature = predictTemperature(
+        temperatures,
+        toLocation(xPos, yPos, tile.zoom)
+      )
 
-                  val color: Color = interpolateColor(colors, temperature)
+      val color: Color = interpolateColor(colors, temperature)
 
-                  pos -> color.toPixel(alpha)
-                }
-              )
+      pos -> color.toPixel(alpha)
+    }
+    )
       .seq
       .sortBy(_._1)
       .map(_._2).toArray
@@ -79,12 +79,17 @@ object Interaction {
                            yearlyData: Iterable[(Year, Data)],
                            generateImage: (Year, Tile, Data) => Unit
                          ): Unit = {
-    for {
+
+    val tiles = for {
       (year, data) <- yearlyData
       zoom <- 0 to 3
       x <- 0 until 1 << zoom
       y <- 0 until 1 << zoom
-    } generateImage(year, Tile(x, y, zoom), data)
+    } yield (year, Tile(x, y, zoom), data)
+
+    tiles.par.foreach(t => {
+      generateImage(t._1, t._2, t._3)
+    })
   }
 
 }

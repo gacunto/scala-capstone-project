@@ -71,7 +71,7 @@ object Extraction {
   private def readTemperatures(temperaturesFile: String): Dataset[Record] = {
     readCsvFile(temperaturesFile, Record.temperatureStructType)
       .as[Record]
-      .filter((record: Record) => record.temp != 9999.9)
+      .filter((record: Record) => record.temp < 200) // != 9999.9
   }
 
   /**
